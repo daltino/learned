@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -e
+
+declare -A VARIABLES_PREFIXES
+
+VARIABLES_PREFIXES=( ["develop"]="dev" ["staging"]="stage" ["master"]="prod" )
+VARIABLES_PREFIX="${VARIABLES_PREFIXES[$1]}"
+
+printf "%s" "$VARIABLES_PREFIX"

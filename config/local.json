@@ -1,0 +1,18 @@
+{
+  "APIUrl": "http://localhost:3000/user-api/v2",
+  "API": {
+    "schema": "http",
+    "host": "localhost",
+    "port": "3000"
+  },
+  "auth0": {
+    "domain": "dev.eu.auth0.com",
+    "redirectUri": "http://localhost:8080/callback",
+    "scope": "openid email identities profile email",
+    "audience": "https://dev.eu.auth0.com/api/v2/",
+    "responseType": "token id_token code"
+  },
+  "googleAnalytics": {
+    "id": "UA-125519048-1"
+  }
+}

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -e
+
+APPLICATION_NAME="learn"
+IMAGE_NAME="133863410377.dkr.ecr.eu-central-1.amazonaws.com/learned:$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
+IMAGE_VERSION="$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
+S3_KEY="preversions/learned-$IMAGE_VERSION.zip"
+S3_URL="s3://$S3_BUCKET/$S3_KEY"
+VARIABLES_PREFIX="$(./ci/environment-prefix "$CI_COMMIT_REF_NAME")"
+ENVIRONMENT_NAME="learn-${VARIABLES_PREFIX}-env"
+
+export IMAGE_NAME
+export NODE_IMAGE_NAME
+
+# shellcheck source=/dev/null
+source <(aws ecr get-login --no-include-email --region eu-central-1)
+
+envsubst < ./Dockerfile.build | docker build -t "$IMAGE_NAME" -
+
+docker push "$IMAGE_NAME"
+
+rm ./Dockerrun.aws.json &> /dev/null || echo "Dockerrun.aws.json was removed already."
+mkfifo ./Dockerrun.aws.json
+envsubst < ci/Dockerrun.aws.json > ./Dockerrun.aws.json&
+zip -FI - ./Dockerrun.aws.json | aws s3 cp - "$S3_URL"
+
+# either create or update it in case of redeployment
+aws elasticbeanstalk create-application-version \
+  --application-name "$APPLICATION_NAME" \
+  --version-label "$IMAGE_VERSION" \
+  --source-bundle S3Bucket="$S3_BUCKET",S3Key="$S3_KEY" || \
+aws elasticbeanstalk update-application-version \
+  --application-name "$APPLICATION_NAME" \
+  --version-label "$IMAGE_VERSION"
+
+aws elasticbeanstalk update-environment \
+  --application-name "$APPLICATION_NAME" \
+  --environment-name "$ENVIRONMENT_NAME" \
+  --version-label "$IMAGE_VERSION" \
+  --option-settings \
+    Namespace=aws:elasticbeanstalk:application:environment,OptionName=VERSION,Value="$IMAGE_VERSION" \
+    Namespace=aws:elasticbeanstalk:application:environment,OptionName=ENV,Value="$IMAGE_VERSION"

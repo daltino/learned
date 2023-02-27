@@ -1,0 +1,102 @@
+$boxWidth: 300px;
+$ballWidth: 15px;
+$translateX: 32px;
+$translateY: 34px;
+$time: 2.1s;
+$scale: 1.1;
+
+.preloader {
+  width: $boxWidth;
+  height: $boxWidth;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -$boxWidth;
+  margin-left: -$boxWidth/2;
+
+  &:before {
+    position: fixed;
+    content: "";
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  &__item {
+    position: absolute;
+    width: $ballWidth;
+    height: $ballWidth;
+    margin-top: $boxWidth/2;
+    margin-left: $boxWidth/2;
+    animation: juggle $time linear infinite;
+
+    &--triangle {
+      animation-delay: -$time/3;
+    }
+    &--square{
+      animation-delay: -$time/1.5;
+      background: #6ccbdf;
+      border-radius: 2px;
+    }
+    &--circle {
+      border-radius: $ballWidth/2;
+      background:#ffca00;
+    }
+  }
+
+  &__info {
+    top: 50%;
+    position: absolute;
+    margin-top: 73px;
+    width: 100%;
+    text-align: center;
+    color: #8f97a7;
+    font-weight: 900;
+    font-size: 14px;
+    margin-left: 14px;
+    -webkit-animation: blink 1.5s ease-in-out infinite;
+    animation: blink 1.5s ease-in-out infinite;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: .5;
+    }
+  }
+
+  @keyframes juggle {
+    0% {
+      transform: translateX(0px) translateY(0px);
+    }
+    12.5% {
+      transform: translateX($translateX/2) translateY(-$translateY);
+    }
+    25% {
+      transform: translateX($translateX) translateY(0px) ;
+      animation-timing-function: ease-out;  }
+    37.5% {
+      transform: translateX($translateX/2) translateY($translateY);
+    }
+    50% {
+      transform: translateX(0px) translateY(0px);
+    }
+    62.5% {
+      transform: translateX(-$translateX/2) translateY(-$translateY);
+      animation-timing-function: ease-in;
+    }
+    75% {
+      transform: translateX(-$translateX) translateY(0px);
+      animation-timing-function: ease-out;
+    }
+    87.5% {
+      transform: translateX(-$translateX/2) translateY($translateY);
+    }
+    100% {
+      transform: translateX(0px) translateY(0px);
+    }
+  }
+}

@@ -1,0 +1,58 @@
+variables:
+  NODE_IMAGE_NAME: "node-$CI_COMMIT_SHORT_SHA"
+
+stages:
+ - setup
+ - test
+ - deploy
+
+setup:
+  stage: setup
+  only:
+    - merge_requests
+    - web
+    - trigger
+    - develop
+    - staging
+    - master
+  script:
+    - printenv | grep "$(./ci/environment-prefix $CI_COMMIT_REF_NAME)_VUE_APP" | cut -f 2- -d '_' > .env.local
+    - docker build -t "$NODE_IMAGE_NAME" .
+
+lint:
+  stage: test
+  only:
+    - merge_requests
+  script:
+    - docker run "$NODE_IMAGE_NAME" npm run lint
+
+audit:
+  stage: test
+  allow_failure: true
+  only:
+    refs:
+    - schedules
+    - merge_requests
+    changes:
+    - package.json
+    - package-lock.json
+  script:
+  - docker run "$NODE_IMAGE_NAME" npm audit
+
+unit_tests:
+  stage: test
+  only:
+    - merge_requests
+  script:
+  - docker run "$NODE_IMAGE_NAME" npm test
+
+deploy:
+  stage: deploy
+  only:
+    - trigger
+    - web
+    - develop
+    - staging
+    - master
+  script:
+    - ./ci/deploy
